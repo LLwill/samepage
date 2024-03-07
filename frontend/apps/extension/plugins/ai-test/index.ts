@@ -1,1 +1,1 @@
-console.log('😄😄😄ai-test plugin loaded!');
+alert('😄😄😄ai-test plugin loaded!');

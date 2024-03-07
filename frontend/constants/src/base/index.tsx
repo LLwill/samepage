@@ -31,6 +31,7 @@ export const MSG_OPEN_MAIN = 'OPEN_MAIN';
 export const MSG_OPEN_LOGIN = 'OPEN_LOGIN';
 export const MSG_FORM_LOGIN = 'LOGIN_PAGE';
 export const MSG_LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const MSG_PAGE_WILL_REFRESH = 'PAGE_WILL_REFRESH';
 // 选中文本: 把选中文本带到聊天框
 export const MSG_SELECTION_SELECTED = 'SELECTION_SELECTED';
 // 点击 selection 下拉快捷操作: 发送对应的 prompt

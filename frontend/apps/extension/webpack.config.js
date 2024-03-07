@@ -12,7 +12,6 @@ const { withResolve } = require('../../webpack/with-resolve');
 const { getClientEnvironment } = require('../../webpack/nx/get-client-environment');
 const version = require('../../version.js');
 const glob = require('glob');
-const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 const lessRegex = /\.less$/;
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || '500000');
@@ -20,15 +19,20 @@ const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || '50
 // 动态获取入口文件
 function getEntries(globPath) {
     const entries = {};
+    const configs = [];
     glob.sync(globPath).forEach((entryPath) => {
         const entryName = path.dirname(entryPath).split(path.sep).pop();
         const config = require(path.resolve(path.dirname(entryPath), `config.json`));
         console.log(config, entryName, entryPath, path.dirname(entryPath), 'getEntries');
         if (!config || config.status === 'enabled') {
+            configs.push({
+                path: `plugins/${entryName}.js`,
+                ...config
+            });
             entries[`plugins/${entryName}`] = path.resolve(__dirname, entryPath);
         }
     });
-    return entries;
+    return { entries, configs };
 }
 
 // Nx plugins for webpack.
@@ -41,10 +45,11 @@ module.exports = composePlugins(
         const { outputPath, projectRoot, watch, root } = options;
         // Update the webpack config as needed here.
         // e.g. `config.plugins.push(new MyPlugin())`
+        const { entries, configs } = getEntries(path.resolve(workspaceRoot, `${projectRoot}/plugins/*/index.ts`));
         const __config = merge(config, {
             entry: {
                 background: path.resolve(workspaceRoot, `${projectRoot}/background/index.ts`),
-                ...getEntries(path.resolve(workspaceRoot, `${projectRoot}/plugins/*/index.ts`))
+                ...entries
             },
             output: {
                 filename: '[name].js',
@@ -52,20 +57,15 @@ module.exports = composePlugins(
                 publicPath: '/'
             },
             plugins: [
-                // new FileManagerPlugin({
-                //     events: {
-                //         onEnd: {
-                //             move: [
-                //                 {
-                //                     source: path.resolve(outputPath, `plugins/background.js`),
-                //                     destination: path.resolve(outputPath)
-                //                 }
-                //             ]
-                //         }
-                //     }
-                // }),
                 new CopyPlugin({
                     patterns: [
+                        {
+                            from: path.resolve(workspaceRoot, `${projectRoot}/plugins.config.json`),
+                            to: path.resolve(outputPath),
+                            transform() {
+                                return JSON.stringify(configs, null, 2);
+                            }
+                        },
                         {
                             from: path.resolve(workspaceRoot, `${projectRoot}/public`),
                             to: path.resolve(outputPath)

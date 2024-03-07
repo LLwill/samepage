@@ -1,7 +1,6 @@
 /* eslint-disable max-nested-callbacks */
 import Browser from 'webextension-polyfill';
 import queryString from 'query-string';
-import { globSync } from 'glob';
 import {
     MSG_OPEN_MAIN,
     MSG_REQUEST,
@@ -10,7 +9,8 @@ import {
     MSG_RESPONSE_TAB_ID,
     MSG_FORM_LOGIN,
     MSG_LOGIN_SUCCESS,
-    MSG_ABORT_REQUEST
+    MSG_ABORT_REQUEST,
+    MSG_PAGE_WILL_REFRESH
 } from '@/constants';
 import {
     isDev,
@@ -86,14 +86,6 @@ Browser.runtime.onInstalled.addListener(function (info) {
         // 执行规则
         chrome.declarativeContent.onPageChanged.addRules([rule]);
     });
-
-    (chrome as any).userScripts.register([
-        {
-            id: 'ai-test',
-            matches: ['*://*/*'],
-            js: [{ file: './plugins/ai-test.js' }]
-        }
-    ]);
 });
 
 /**
@@ -196,6 +188,10 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             cancelSseFun?.();
         }
 
+        if (type === MSG_PAGE_WILL_REFRESH) {
+            runPluginFiles(tabWindow.id!);
+        }
+
         switch (type) {
             case MSG_FETCH:
                 fetchData(data.input, data.opts)
@@ -269,7 +265,18 @@ Browser.windows.onRemoved.addListener((windowId) => {
     }
 });
 
-// 遍历所有插件
-// globSync('./plugins/*.js').forEach((file) => {
-//     console.log('plugins file', file);
-// });
+async function runPluginFiles(tabId: number) {
+    const pluginsConfigUrl = chrome.runtime.getURL('plugins.config.json');
+    const pluginConfigs = (await fetch(pluginsConfigUrl).then((res) => res.json())) as any[];
+    pluginConfigs.forEach(({ path }) => {
+        chrome.scripting.executeScript({
+            target: { tabId },
+            files: [path]
+        });
+    });
+}
+
+// function getPluginFiles() {
+//     const files = globSync('./plugins/*.js');
+//     return files;
+// }

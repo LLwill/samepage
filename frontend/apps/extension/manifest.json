@@ -11,7 +11,7 @@
     "js": ["content.js"],
     "run_at": "document_idle"
   }],
-  "permissions": ["storage", "declarativeContent", "tabs", "activeTab", "userScripts"],
+  "permissions": ["storage", "declarativeContent", "tabs", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
   "web_accessible_resources": [{
     "resources": ["/images/*.png"],

@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom/client';
 import { ConversationProvider } from '@xm/context';
-import { ASYNC_SCRIOPTS_ID } from '@/constants';
+import { ASYNC_SCRIOPTS_ID, MSG_PAGE_WILL_REFRESH } from '@/constants';
 import { SCRIPTS_URL } from '@/utils';
 
 import App from './app/app';
@@ -52,4 +52,11 @@ window.onload = function () {
     iframe.height = '100%';
     iframe.style.display = 'none';
     document.body.appendChild(iframe);
+};
+
+/**
+ * 页面即将刷新
+ */
+window.onbeforeunload = function () {
+    chrome.runtime.sendMessage({ type: MSG_PAGE_WILL_REFRESH });
 };
