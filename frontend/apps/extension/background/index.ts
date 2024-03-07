@@ -1,6 +1,7 @@
 /* eslint-disable max-nested-callbacks */
 import Browser from 'webextension-polyfill';
 import queryString from 'query-string';
+import { globSync } from 'glob';
 import {
     MSG_OPEN_MAIN,
     MSG_REQUEST,
@@ -85,6 +86,14 @@ Browser.runtime.onInstalled.addListener(function (info) {
         // 执行规则
         chrome.declarativeContent.onPageChanged.addRules([rule]);
     });
+
+    (chrome as any).userScripts.register([
+        {
+            id: 'ai-test',
+            matches: ['*://*/*'],
+            js: [{ file: './plugins/ai-test.js' }]
+        }
+    ]);
 });
 
 /**
@@ -259,3 +268,8 @@ Browser.windows.onRemoved.addListener((windowId) => {
         currWindowObj[removeActionKey] = null;
     }
 });
+
+// 遍历所有插件
+// globSync('./plugins/*.js').forEach((file) => {
+//     console.log('plugins file', file);
+// });

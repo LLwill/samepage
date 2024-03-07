@@ -11,9 +11,25 @@ const { xmWithNx } = require('../../webpack/nx/xm-with-nx');
 const { withResolve } = require('../../webpack/with-resolve');
 const { getClientEnvironment } = require('../../webpack/nx/get-client-environment');
 const version = require('../../version.js');
+const glob = require('glob');
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 const lessRegex = /\.less$/;
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || '500000');
+
+// 动态获取入口文件
+function getEntries(globPath) {
+    const entries = {};
+    glob.sync(globPath).forEach((entryPath) => {
+        const entryName = path.dirname(entryPath).split(path.sep).pop();
+        const config = require(path.resolve(path.dirname(entryPath), `config.json`));
+        console.log(config, entryName, entryPath, path.dirname(entryPath), 'getEntries');
+        if (!config || config.status === 'enabled') {
+            entries[`plugins/${entryName}`] = path.resolve(__dirname, entryPath);
+        }
+    });
+    return entries;
+}
 
 // Nx plugins for webpack.
 module.exports = composePlugins(
@@ -27,7 +43,8 @@ module.exports = composePlugins(
         // e.g. `config.plugins.push(new MyPlugin())`
         const __config = merge(config, {
             entry: {
-                background: path.resolve(workspaceRoot, `${projectRoot}/background/index.ts`)
+                background: path.resolve(workspaceRoot, `${projectRoot}/background/index.ts`),
+                ...getEntries(path.resolve(workspaceRoot, `${projectRoot}/plugins/*/index.ts`))
             },
             output: {
                 filename: '[name].js',
@@ -35,6 +52,18 @@ module.exports = composePlugins(
                 publicPath: '/'
             },
             plugins: [
+                // new FileManagerPlugin({
+                //     events: {
+                //         onEnd: {
+                //             move: [
+                //                 {
+                //                     source: path.resolve(outputPath, `plugins/background.js`),
+                //                     destination: path.resolve(outputPath)
+                //                 }
+                //             ]
+                //         }
+                //     }
+                // }),
                 new CopyPlugin({
                     patterns: [
                         {
