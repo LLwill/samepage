@@ -24,6 +24,7 @@
     "background/**/*.jsx",
     "background/**/*.ts",
     "background/**/*.tsx",
-    "../../types/**/*.d.ts"
+    "../../types/**/*.d.ts",
+    "plugins/**/*.ts",
   ]
 }

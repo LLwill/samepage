@@ -1,0 +1,10 @@
+{
+  "title": "百度页面打开 samepage",
+  "description": "测试",
+  "version": "0.0.1",
+  "status": "enabled",
+  "matchs": [
+    "http://www.baidu.com"
+  ],
+  "runAt": "document_idle"
+}

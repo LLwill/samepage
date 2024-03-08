@@ -1,0 +1,10 @@
+{
+  "title": "social grow 增强分析",
+  "description": "分析社交数据",
+  "version": "0.0.1",
+  "status": "enabled",
+  "matchs": [
+    "https://socialgrow.miaozhen.com/*"
+  ],
+  "runAt": "document_end"
+}

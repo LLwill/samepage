@@ -20,6 +20,10 @@ declare global {
     interface Window {
         __wxjs_environment: string;
         __xm_async_scripts__: any;
+        SP_isloaded: boolean;
+        SP_openExtension: (url?: string) => void;
+        SP_getAllAssistants: () => Promise<any>;
+        SP_openAssistant: ({ assistant: any, content: string }) => void;
     }
 }
 

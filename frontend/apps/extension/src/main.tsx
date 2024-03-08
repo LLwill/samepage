@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom/client';
 import { ConversationProvider } from '@xm/context';
-import { ASYNC_SCRIOPTS_ID, MSG_PAGE_WILL_REFRESH } from '@/constants';
+import { ASYNC_SCRIOPTS_ID, MSG_PAGE_WILL_REFRESH, MSG_OPEN_MAIN } from '@/constants';
 import { SCRIPTS_URL } from '@/utils';
 
 import App from './app/app';
@@ -9,6 +9,13 @@ import '@/common/styles/frame.less';
 
 // shadow DOM antd 样式解决方案
 import { createCache, StyleProvider } from '@ant-design/cssinjs';
+
+(() => {
+    const extensionId = chrome.runtime.id;
+    document.body.setAttribute('same-page-id', extensionId);
+    const extensionVersion = chrome.runtime.getManifest().version;
+    document.body.setAttribute('same-page-version', extensionVersion);
+})();
 
 // 创建id为CRX-container的div
 const __root__ = document.createElement('div');

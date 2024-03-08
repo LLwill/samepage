@@ -26,6 +26,7 @@ function getEntries(globPath) {
         console.log(config, entryName, entryPath, path.dirname(entryPath), 'getEntries');
         if (!config || config.status === 'enabled') {
             configs.push({
+                name: entryName,
                 path: `plugins/${entryName}.js`,
                 ...config
             });

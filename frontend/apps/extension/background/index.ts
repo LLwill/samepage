@@ -10,7 +10,8 @@ import {
     MSG_FORM_LOGIN,
     MSG_LOGIN_SUCCESS,
     MSG_ABORT_REQUEST,
-    MSG_PAGE_WILL_REFRESH
+    MSG_PAGE_WILL_REFRESH,
+    MSG_OPEN_BOT
 } from '@/constants';
 import {
     isDev,
@@ -86,6 +87,7 @@ Browser.runtime.onInstalled.addListener(function (info) {
         // 执行规则
         chrome.declarativeContent.onPageChanged.addRules([rule]);
     });
+    registerPlugins();
 });
 
 /**
@@ -105,14 +107,21 @@ Browser.runtime.onStartup.addListener(async () => {
     trySyncAllSubRules(setting, true);
 });
 
-async function openExtension(tab: any) {
+async function openExtension(tab: any, data?: any) {
     const { id } = tab;
 
     if (!id) {
         return;
     }
 
-    Browser.tabs.sendMessage(id, { type: MSG_OPEN_MAIN, data: {} }).catch(() => void 0);
+    Browser.tabs.sendMessage(id, { type: MSG_OPEN_MAIN, data: { ...data } }).catch(() => void 0);
+}
+
+function openBot(tab: any, data: any) {
+    const { bot = {}, ...others } = data;
+    const { key, type } = bot;
+    const url = `/conversation/${type}/${key}`;
+    openExtension(tab, { url, bot, ...others });
 }
 
 // 点击插件图标打开插件
@@ -188,9 +197,18 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             cancelSseFun?.();
         }
 
-        if (type === MSG_PAGE_WILL_REFRESH) {
-            runPluginFiles(tabWindow.id!);
+        // 允许通过 background 打开插件
+        if (type === MSG_OPEN_MAIN) {
+            openExtension(tabWindow, data);
         }
+
+        if (type === MSG_OPEN_BOT) {
+            openBot(tabWindow, data);
+        }
+
+        // if (type === MSG_PAGE_WILL_REFRESH) {
+        //     runPluginFiles(tabWindow.id!);
+        // }
 
         switch (type) {
             case MSG_FETCH:
@@ -265,14 +283,36 @@ Browser.windows.onRemoved.addListener((windowId) => {
     }
 });
 
-async function runPluginFiles(tabId: number) {
+async function getPluginsConfigs() {
     const pluginsConfigUrl = chrome.runtime.getURL('plugins.config.json');
     const pluginConfigs = (await fetch(pluginsConfigUrl).then((res) => res.json())) as any[];
+    return pluginConfigs;
+}
+
+async function runPluginFiles(tabId: number) {
+    const pluginConfigs = await getPluginsConfigs();
     pluginConfigs.forEach(({ path }) => {
         chrome.scripting.executeScript({
             target: { tabId },
             files: [path]
         });
+    });
+}
+
+async function registerPlugins() {
+    const pluginConfigs = await getPluginsConfigs();
+    pluginConfigs.forEach(({ path, name, matches = ['<all_urls>'] }) => {
+        chrome.scripting.registerContentScripts([
+            {
+                id: name,
+                js: [path],
+                //   persistAcrossSessions,
+                matches: [...matches]
+                //   runAt,
+                //   allFrames,
+                //   world
+            }
+        ]);
     });
 }
 
