@@ -301,10 +301,10 @@ async function runPluginFiles(tabId: number) {
 
 async function registerPlugins() {
     const pluginConfigs = await getPluginsConfigs();
-    pluginConfigs.forEach(({ path, name, matches = ['<all_urls>'] }) => {
+    pluginConfigs.forEach(({ path, key, matches = ['<all_urls>'] }) => {
         chrome.scripting.registerContentScripts([
             {
-                id: name,
+                id: key,
                 js: [path],
                 //   persistAcrossSessions,
                 matches: [...matches]

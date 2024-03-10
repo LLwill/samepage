@@ -1,3 +1,13 @@
+// ==UserScript==
+// @name         百度页面打开 samepage
+// @namespace    same-page-extension
+// @version      1
+// @description  测试
+// @match        http://www.baidu.com
+// @grant        none
+// @status       enabled
+// ==/UserScript==
+
 (() => {
     console.log('baidu-add-sp-init', window);
     const baiduBtn = document.querySelector('#form');

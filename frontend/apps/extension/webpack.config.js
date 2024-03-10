@@ -12,6 +12,8 @@ const { withResolve } = require('../../webpack/with-resolve');
 const { getClientEnvironment } = require('../../webpack/nx/get-client-environment');
 const version = require('../../version.js');
 const glob = require('glob');
+const fs = require('fs');
+const { parseMeta } = require('./utils/scripts.ts');
 
 const lessRegex = /\.less$/;
 const imageInlineSizeLimit = parseInt(process.env.IMAGE_INLINE_SIZE_LIMIT || '500000');
@@ -21,12 +23,17 @@ function getEntries(globPath) {
     const entries = {};
     const configs = [];
     glob.sync(globPath).forEach((entryPath) => {
-        const entryName = path.dirname(entryPath).split(path.sep).pop();
-        const config = require(path.resolve(path.dirname(entryPath), `config.json`));
+        // 获取文件名
+        const entryName = path.basename(entryPath, path.extname(entryPath));
+        // const config = require(path.resolve(path.dirname(entryPath), `config.json`));
+        // 读取文件源文件
+        const code = fs.readFileSync(entryPath, 'utf-8');
+        const config = parseMeta(code);
+
         console.log(config, entryName, entryPath, path.dirname(entryPath), 'getEntries');
         if (!config || config.status === 'enabled') {
             configs.push({
-                name: entryName,
+                key: entryName,
                 path: `plugins/${entryName}.js`,
                 ...config
             });
@@ -46,10 +53,14 @@ module.exports = composePlugins(
         const { outputPath, projectRoot, watch, root } = options;
         // Update the webpack config as needed here.
         // e.g. `config.plugins.push(new MyPlugin())`
-        const { entries, configs } = getEntries(path.resolve(workspaceRoot, `${projectRoot}/plugins/*/index.ts`));
+        const { entries: initEntries, configs: initPluginsConfigs } = getEntries(
+            path.resolve(workspaceRoot, `${projectRoot}/init-plugins/*.ts`)
+        );
+        const { entries, configs } = getEntries(path.resolve(workspaceRoot, `${projectRoot}/plugins/*.{ts,js}`));
         const __config = merge(config, {
             entry: {
                 background: path.resolve(workspaceRoot, `${projectRoot}/background/index.ts`),
+                ...initEntries,
                 ...entries
             },
             output: {
@@ -64,7 +75,7 @@ module.exports = composePlugins(
                             from: path.resolve(workspaceRoot, `${projectRoot}/plugins.config.json`),
                             to: path.resolve(outputPath),
                             transform() {
-                                return JSON.stringify(configs, null, 2);
+                                return JSON.stringify([...initPluginsConfigs, ...configs], null, 2);
                             }
                         },
                         {

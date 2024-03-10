@@ -1,7 +1,0 @@
-{
-  "title": "初始化 plugins 使用能力",
-  "description": "内部加载使用",
-  "version": "0.0.1",
-  "status": "enabled",
-  "runAt": "document_start"
-}

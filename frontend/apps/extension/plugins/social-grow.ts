@@ -1,4 +1,14 @@
-import logoUrl from '@/assets/images/logo.svg';
+// ==UserScript==
+// @name         social grow 增强分析
+// @namespace    same-page-extension
+// @version      1
+// @description  分析社交数据
+// @match        https://socialgrow.miaozhen.com/*
+// @grant        none
+// @status       enabled
+// @runAt        document_end
+// ==/UserScript==
+
 (() => {
     // 监听div[class^="chart-container]相关节点是否渲染
     const __sp_plugin_key__ = '__sp_plugin_logo__';

@@ -1,3 +1,13 @@
+// ==UserScript==
+// @name         SamePage Extension
+// @namespace    same-page-extension
+// @version      1
+// @description  same-page-extension
+// @match        *://*/*
+// @grant        none
+// @status       enabled
+// ==/UserScript==
+
 import { MSG_OPEN_MAIN, MSG_OPEN_BOT } from '@/constants';
 import services from '@xm/services';
 (() => {
